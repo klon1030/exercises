@@ -26,27 +26,20 @@ action - действие, с помощью которого мы перешли в текущее состояние."""
         if sol == []:
         # есть тольно один вариант анчала решения
                 sol = [((A, 0), acts.fA)]
-                return get_first_solution( A, B, q, sol)
         (x, y) = sol[-1][0]
         if q in (x, y):
         # если текущее состояние содержит требуемый объём жидкости, то заканчиваем
                 return sol
-        if x > B and y == 0:
-                sol += [((x-B, B), acts.A2B)]
-                return get_first_solution(A, B, q, sol)
-        if x > B and y == B:
+        if y == B:
                 sol += [((x, 0), acts.eB)]
-                return get_first_solution(A, B, q, sol)
+        if x > B and y == 0:
+                sol += [((x-B, B), acts.A2B),]
         if x < B and y == 0:
                 sol += [((0, x), acts.A2B)]
-                return get_first_solution(A, B, q, sol)
-        if x < B and y == B:
-                sol += [((x, 0), acts.eB)]
-                return get_first_solution(A, B, q, sol)
         if x == 0:
                 sol += [((A, y), acts.fA),
                         ((A - (B-y), B), acts.A2B)]
-                return get_first_solution(A, B, q, sol)
+        return get_first_solution(A, B, q, sol)
 
 
 class Actions:
