@@ -48,14 +48,22 @@ def test__get_first_solution():
             },
         'expected': [((5, 0), acts.fA)]
         },
-        
+        {
+        'input': {
+            'A': 5,
+            'B': 3,
+            'q': 2,
+            },
+        'expected': [((5, 0), acts.fA),
+                     ((2, 3), acts.A2B)]
+        },        
     )
     test_OK = True
     for d in test_cases:
         d_in = d['input']
         res = get_first_solution(d_in['A'], d_in['B'], d_in['q'])
         if res != d['expected']:
-            tests_OK = False
+            test_OK = False
             print '''\
 test failed
 test case:
