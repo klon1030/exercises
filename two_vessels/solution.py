@@ -55,7 +55,7 @@ def test__get_first_solution():
         d_in = d['input']
         res = get_first_solution(d_in['A'], d_in['B'], d_in['q'])
         if res != d['expected']:
-            tests_OK = False
+            test_OK = False
             print '''\
 test failed
 test case:
