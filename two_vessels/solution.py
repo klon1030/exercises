@@ -64,7 +64,22 @@ def test__get_first_solution():
             },
         'expected': [((5, 0), acts.fA),
                      ((2, 3), acts.A2B)]
-        },        
+        },
+        {
+        'input': {
+            'A': 5,
+            'B': 3,
+            'q': 1,
+            },
+        'expected': [((5, 0), acts.fA),
+                     ((2, 3), acts.A2B),
+                     ((2, 0), acts.eB),
+                     ((0, 2), acts.A2B),
+                     ((5, 2), acts.fA),
+                     ((4, 3), acts.A2B),
+                     ((4, 0), acts.eB),
+                     ((1, 3), acts.A2B)]
+        },
     )
     test_OK = True
     for d in test_cases:
