@@ -20,7 +20,7 @@ v2 > 0 - объём второго сосуда;
 0 < q <= max(v1, v2) - объём жидкости, который надо получить;
 sol - решение, полученное на предыдущем шаге.
 Выход:
-Решение вида [...,({A: x, B: y}, action) ,...],
+Решение вида [...,({A: x, B: y}, action) ,...] - список "шагов",
 где x - текущий объёмы жидкости в сосуде объёма A,
 y - текущий объёмы жидкости в сосуде объёма B,
 action - действие, с помощью которого мы перешли в текущее состояние."""
@@ -28,7 +28,7 @@ action - действие, с помощью которого мы перешли в текущее состояние."""
         
         if sol == []:
         # есть тольно один вариант анчала решения
-                sol = [({A: A, B: 0}, acts.fA)]
+                sol = [({A: A, B: 0}, ACTS.fA)]
         
         last_step = sol[-1]
         state = last_step[0]
@@ -37,18 +37,18 @@ action - действие, с помощью которого мы перешли в текущее состояние."""
         # если текущее состояние содержит требуемый объём жидкости, то заканчиваем
                 return sol
         if y == B:
-                sol += [({A: x, B: 0}, acts.eB)]
+                sol += [({A: x, B: 0}, ACTS.eB)]
         if x > B and y == 0:
-                sol += [({A: x-B, B: B}, acts.A2B),]
+                sol += [({A: x-B, B: B}, ACTS.A2B),]
         if x < B and y == 0:
-                sol += [({A: 0, B: x}, acts.A2B)]
+                sol += [({A: 0, B: x}, ACTS.A2B)]
         if x == 0:
-                sol += [({A: A, B: y}, acts.fA),
-                        ({A: A - (B-y), B: B}, acts.A2B)]
+                sol += [({A: A, B: y}, ACTS.fA),
+                        ({A: A - (B-y), B: B}, ACTS.A2B)]
         return get_first_solution(A, B, q, sol)
 
 
-class Actions:
+class ACTIONS:
 	A2B = 1     # transfer A -> B
 	B2A = 2     # transfer B -> A
 	fA = 3      # fill A
@@ -57,7 +57,7 @@ class Actions:
 	eB = 6      # empty B
 
 	
-acts = Actions
+ACTS = ACTIONS
 
 
 def test__get_first_solution():
@@ -68,7 +68,7 @@ def test__get_first_solution():
             'v2': 3,
             'q': 5,
             },
-        'expected': [({5:5, 3:0}, acts.fA)]
+        'expected': [({5:5, 3:0}, ACTS.fA)]
         },
         {
         'input': {
@@ -76,8 +76,8 @@ def test__get_first_solution():
             'v2': 3,
             'q': 2,
             },
-        'expected': [({5:5, 3:0}, acts.fA),
-                     ({5:2, 3:3}, acts.A2B)]
+        'expected': [({5:5, 3:0}, ACTS.fA),
+                     ({5:2, 3:3}, ACTS.A2B)]
         },
         {
         'input': {
@@ -85,14 +85,14 @@ def test__get_first_solution():
             'v2': 3,
             'q': 1,
             },
-        'expected': [({5:5, 3:0}, acts.fA),
-                     ({5:2, 3:3}, acts.A2B),
-                     ({5:2, 3:0}, acts.eB),
-                     ({5:0, 3:2}, acts.A2B),
-                     ({5:5, 3:2}, acts.fA),
-                     ({5:4, 3:3}, acts.A2B),
-                     ({5:4, 3:0}, acts.eB),
-                     ({5:1, 3:3}, acts.A2B)]
+        'expected': [({5:5, 3:0}, ACTS.fA),
+                     ({5:2, 3:3}, ACTS.A2B),
+                     ({5:2, 3:0}, ACTS.eB),
+                     ({5:0, 3:2}, ACTS.A2B),
+                     ({5:5, 3:2}, ACTS.fA),
+                     ({5:4, 3:3}, ACTS.A2B),
+                     ({5:4, 3:0}, ACTS.eB),
+                     ({5:1, 3:3}, ACTS.A2B)]
         },
         {
         'input': {
@@ -100,14 +100,14 @@ def test__get_first_solution():
             'v2': 5,
             'q': 1,
             },
-        'expected': [({5:5, 3:0}, acts.fA),
-                     ({5:2, 3:3}, acts.A2B),
-                     ({5:2, 3:0}, acts.eB),
-                     ({5:0, 3:2}, acts.A2B),
-                     ({5:5, 3:2}, acts.fA),
-                     ({5:4, 3:3}, acts.A2B),
-                     ({5:4, 3:0}, acts.eB),
-                     ({5:1, 3:3}, acts.A2B)]
+        'expected': [({5:5, 3:0}, ACTS.fA),
+                     ({5:2, 3:3}, ACTS.A2B),
+                     ({5:2, 3:0}, ACTS.eB),
+                     ({5:0, 3:2}, ACTS.A2B),
+                     ({5:5, 3:2}, ACTS.fA),
+                     ({5:4, 3:3}, ACTS.A2B),
+                     ({5:4, 3:0}, ACTS.eB),
+                     ({5:1, 3:3}, ACTS.A2B)]
         },
     )
     test_OK = True
@@ -130,3 +130,66 @@ got:
 
             
 test__get_first_solution()
+
+
+def sprint_sol_step(v1, v2, step):
+        """Функция для генерации строки с описание текущего шага step для задачи
+о переливании двух сосудов объёмами v1 и v2.
+"""
+        (state, action) = step
+        
+        (A_id, B_id) = (1, 2) if v1 > v2 else (2, 1)
+        
+        action_tmplts = {
+                ACTS.A2B: 'transfer #%(A_id)d -> #%(B_id)d',
+                ACTS.B2A: 'transfer #%(B_id)d -> #%(A_id)d',
+                ACTS.eA: 'empty #%(A_id)d',
+                ACTS.fA: 'fill #%(A_id)d',
+                ACTS.eB: 'empty #%(B_id)d',
+                ACTS.fB: 'fill #%(B_id)d',
+                }
+        action_str = action_tmplts[action] % {'A_id': A_id, 'B_id': B_id}
+        return '%s: %d %d' % (action_str, state[v1], state[v2])
+
+
+def test__sprint_sol_step():
+# TODO: неплохо бы вбить тесты на оставшиеся действия.
+    test_cases = (
+        {
+        'input': {
+            'v1': 5,
+            'v2': 3,
+            'step': ({5:2, 3:0}, ACTS.eB),
+            },
+        'expected': 'empty #2: 2 0'
+        },
+        {
+        'input': {
+            'v1': 3,
+            'v2': 5,
+            'step': ({5:2, 3:0}, ACTS.eB),
+            },
+        'expected': 'empty #1: 0 2'
+        },
+    )
+    test_OK = True
+    for d in test_cases:
+        d_in = d['input']
+        res = sprint_sol_step(d_in['v1'], d_in['v2'], d_in['step'])
+        if res != d['expected']:
+            test_OK = False
+            print '''\
+test__sprint_sol_step() failed
+test case:
+%(test_case_data)s
+got:
+
+%(res)s
+''' % {'test_case_data': d,
+       'res': res}
+    if test_OK:
+            print 'test__sprint_sol_step() passed'
+
+
+                
+test__sprint_sol_step()
