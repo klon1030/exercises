@@ -64,16 +64,16 @@ def test__get_first_solution():
     test_cases = (
         {
         'input': {
-            'A': 5,
-            'B': 3,
+            'v1': 5,
+            'v2': 3,
             'q': 5,
             },
         'expected': [({5:5, 3:0}, acts.fA)]
         },
         {
         'input': {
-            'A': 5,
-            'B': 3,
+            'v1': 5,
+            'v2': 3,
             'q': 2,
             },
         'expected': [({5:5, 3:0}, acts.fA),
@@ -81,8 +81,23 @@ def test__get_first_solution():
         },
         {
         'input': {
-            'A': 5,
-            'B': 3,
+            'v1': 5,
+            'v2': 3,
+            'q': 1,
+            },
+        'expected': [({5:5, 3:0}, acts.fA),
+                     ({5:2, 3:3}, acts.A2B),
+                     ({5:2, 3:0}, acts.eB),
+                     ({5:0, 3:2}, acts.A2B),
+                     ({5:5, 3:2}, acts.fA),
+                     ({5:4, 3:3}, acts.A2B),
+                     ({5:4, 3:0}, acts.eB),
+                     ({5:1, 3:3}, acts.A2B)]
+        },
+        {
+        'input': {
+            'v1': 3,
+            'v2': 5,
             'q': 1,
             },
         'expected': [({5:5, 3:0}, acts.fA),
@@ -98,7 +113,7 @@ def test__get_first_solution():
     test_OK = True
     for d in test_cases:
         d_in = d['input']
-        res = get_first_solution(d_in['A'], d_in['B'], d_in['q'])
+        res = get_first_solution(d_in['v1'], d_in['v2'], d_in['q'])
         if res != d['expected']:
             test_OK = False
             print '''\
@@ -106,6 +121,7 @@ test failed
 test case:
 %(test_case_data)s
 got:
+
 %(res)s
 ''' % {'test_case_data': d,
        'res': res}
