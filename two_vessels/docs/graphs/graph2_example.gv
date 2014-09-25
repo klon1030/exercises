@@ -1,0 +1,11 @@
+ digraph G2 {
+"0, 0" -> "0, B";
+"0, B" -> "x, 0" [label = "x = B"];
+"x, 0" -> "x, B";
+"x, B" -> "x+B, 0" [label = "x+B < A"];
+"x+B, 0" -> "x, 0"  [style=dotted];
+"x, B" -> "A, B - (A-x)" [label = "x+B > A"];
+"A, B - (A-x)" -> "0, B - (A-x)";
+"0, B - (A-x)" -> "0, x" [style=dotted];
+ "0, x" -> "x, 0";
+ }

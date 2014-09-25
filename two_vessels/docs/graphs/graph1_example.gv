@@ -1,0 +1,10 @@
+ digraph G {
+"0, 0" -> "A, 0";
+"A, 0" -> "x, B" [label = "x = A-B"];
+"x, B" -> "x, 0";
+"x, 0" -> "x-B, 0" [label = "x > B"];
+"x-B, 0" -> "x, 0"  [style=dotted];
+"x, 0" -> "0, x" [label = "x < B"];
+"0, x" -> "A, x" -> "A - (B-x), B" -> "A - (B-x), 0";
+"A - (B-x), 0" -> "x, 0" [style=dotted];
+ }
