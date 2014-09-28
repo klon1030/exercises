@@ -1,32 +1,29 @@
 # -*- coding: cp1251 -*-
 import itertools
 
-def read_head(seq, n):
+def fetch_head(seq, n):
     return list(itertools.islice(seq, 0, n))
 
 
 class RingBuffer:
     def __init__(self, buf_size, data_seq):
         self.buf_size = buf_size
-        self.data = read_head(data_seq, buf_size)
+        self.data = fetch_head(data_seq, buf_size)
         
     def append(self, x):
         self.data.pop(0)
         self.data.append(x)
 
 
-class MySeq:
-        def __init__(self, seq):
-                self.seq = seq                
-
-        def find(self, subseq):
-            sublist = list(subseq)
-            buf = RingBuffer(len(sublist), self.seq)
-            i = 0
-            while buf.data != subseq:
-                buf.append(self.seq.next())
-                i += 1
-            return i
+def find_subseq(subseq, seq):
+    sublist = list(subseq)
+    seq_iter = iter(seq)
+    buf = RingBuffer(len(sublist), seq_iter)
+    i = 0
+    while buf.data != sublist:
+        buf.append(seq_iter.next())
+        i += 1
+    return i
 
 
 ##def gen_num_seq():
@@ -41,8 +38,7 @@ def gen_seq_str(n):
     return ''.join(map(str, range(0, n)))        
 
 ##for i in range(0, 999):
-##    ms = MySeq(gen_num_seq())
-##    res = ms.find(str(i))
+##    res = find_subseq(str(i), gen_num_seq())
 ##    if res < i:
 ##        print i
 
@@ -199,8 +195,6 @@ def head_and_tail_tmpls_may_be_neighbours(head_chunk,
     #print 'tail[-k:ss_len-k]:', (tail+'*'*(ch_sz-ss_len+k))[-k:ss_len-k]
     #chunked_head = '*'*(ch_sz - k) + head
     #chunked_tail = tail + '*'*(ch_sz - (ss_len-k))
-    print inc_head
-    print tail_chunk
     
     return inc_head[-k:N-k] == tail_chunk[-k:N-k]
 
