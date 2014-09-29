@@ -131,7 +131,7 @@ got:
             print 'test__get_first_solution() passed'
 
             
-test__get_first_solution()
+#test__get_first_solution()
 
 
 #TODO: развернуть рекурсию в цикл.
@@ -233,7 +233,7 @@ got:
             print 'test__get_second_solution() passed'
 
 
-test__get_second_solution()
+#test__get_second_solution()
 
 
 
@@ -297,7 +297,7 @@ got:
 
 
                 
-test__sprint_sol_step()
+#test__sprint_sol_step()
 
 
 
