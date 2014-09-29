@@ -311,10 +311,10 @@ def gcd(a, b):
 
 def solve(v1, v2, q):
     if v1 <= 0 or v2 <= 0 or q > max(v1, v2):
-        return None
+        return 'input_error'
     d = gcd(v1, v2)
     if d != 1 and q % d != 0 :
-            return None
+            return 'unable_to_solve'
     res1 = get_first_solution(v1, v2, q)
     res2 = get_second_solution(v1, v2, q)
     if len(res1) > len(res2):
@@ -324,7 +324,10 @@ def solve(v1, v2, q):
 
 def print_solution(v1, v2, q):
     sol = solve(v1, v2, q)
-    if sol == None:
+    if sol == 'input_error':
+        print 'ошибка во входных данных'
+        return
+    if sol == 'unable_to_solve':
         print 'невозможно решить задачу'
         return
     print "\t%17s: %d \t%d" % ('volumes:', v1, v2)
@@ -335,9 +338,13 @@ def print_solution(v1, v2, q):
 
 
 def fprint_solution(v1, v2, q):
+    # TODO: убрать дублирование конструкций с print_solution()
     f = open('out.txt', 'w')
     sol = solve(v1, v2, q)
-    if sol == None:
+    if sol == 'input_error':
+        f.write('ошибка во входных данных')
+        return
+    if sol == 'unable_to_solve':
         f.write('невозможно решить задачу')
         return
     f.write("\t%17s: %d \t%d" % ('volumes:', v1, v2) + '\n')
@@ -346,14 +353,15 @@ def fprint_solution(v1, v2, q):
     for (i, step) in enumerate(sol):
         f.write('%d\t' % (i+1) + sprint_sol_step(v1, v2, step) + '\n')
 
-
+import sys
 def read_in():
     try:
         with open("in.txt") as f:
             f_str = f.read()
             pars = filter(lambda s: s.strip() != '', f_str.strip().split())        
     except IOError:
-        print("Cannot open file 'in.txt'")
+        print("Ошибка при открытии файла 'in.txt'. Возможно, его не существует?")
+        sys.exit(1)
     (v1, v2, q) = map(int, pars[:3])
     return (v1, v2, q)
 
