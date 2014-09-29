@@ -50,6 +50,25 @@ def calc_num_idx_in_str(i):
     if i <= 1000:
         return 10 + 2*(100 - 10) + 3*(i - 100) - 1
 
+
+from math import log
+def calc_num_idx_in_str_2(num):
+    n = len(str(num))
+    res = 0
+    for i in range(1, n):
+        res += i*9*pow(10, i-1)
+    res += n*(num - pow(10, n-1))
+    return res
+
+def test__calc_num_idx_in_str_2():
+    for i in range(0, 1000):
+        if calc_num_idx_in_str_2(i) != calc_num_idx_in_str(i):
+            print 'test__calc_num_idx_in_str_2() failed at i = ', i
+            print
+            break
+    print 'test__calc_num_idx_in_str_2 passed'
+test__calc_num_idx_in_str_2()
+
 ##res = []
 ##str_len = int(1e4)
 ##s = gen_seq_str(str_len)
@@ -461,7 +480,11 @@ def find_solution(sample):
 
 
 def gen_head(subseq, chunk_size):
-    return map(lambda i: (subseq[:i], subseq[i:]), range(1, chunk_size+1))
+    len_wo_lead_zeros = len(subseq.lstrip('0'))
+    zeros_num = len(subseq) - len_wo_lead_zeros
+    start_idx = 1 if zeros_num == 0 else zeros_num
+    return map(lambda i: (subseq[:i], subseq[i:]), range(start_idx, chunk_size+1))
+        
 
 
 def test__gen_head():
@@ -477,6 +500,22 @@ def test__gen_head():
                      ('12', '3456'),
                      ('123', '456'),
                      ('1234', '56')]
+        },
+        {
+        'input':{
+            'subseq': '00123456',
+            'chunk_size': 4,
+            },
+        'expected': [('00', '123456'),
+                     ('001', '23456'),
+                     ('0012', '3456')]
+        },
+        {
+        'input':{
+            'subseq': '00000123456',
+            'chunk_size': 4,
+            },
+        'expected': []
         },
     )
     test_OK = True
@@ -526,7 +565,6 @@ def gen_next_chunk_by_head(resid, head, chunk_size):
             return (chunk_c, resid[(chunk_size+1):])
     # ¬ противном случае: кусок с таким количеством разр€дов не совместим с текущей головой.
     return None
-
 
 def test__gen_next_chunk_by_head():
     test_name = 'test__gen_next_chunk_by_head'
@@ -705,7 +743,7 @@ def test__gen_chunks():
             'first_chunk': '1',
             'resid': '235',
             },
-        'expected': (['1', '2', '3'], 5)
+        'expected': (['1', '2', '3'], '5')
         },
         {
         'input':{
@@ -785,9 +823,10 @@ subseq = '88999'
 def find_solution(subseq):
     for chunk_size in range(1, len(subseq)+1):
         res = []
-        for (head, resid) in gen_head(subseq, chunk_size):
-            if len(resid) >= chunk_size:
-                next_chunk_res = gen_next_chunk_by_head(resid, head, chunk_size)
+        for (head, full_resid) in gen_head(subseq, chunk_size):
+            #print chunk_size, '"%s" "%s"' % (head, resid)
+            if len(full_resid) >= chunk_size:
+                next_chunk_res = gen_next_chunk_by_head(full_resid, head, chunk_size)
                 if next_chunk_res == None:
                     continue
                 (first_chunk, resid) = next_chunk_res
@@ -798,38 +837,72 @@ def find_solution(subseq):
                 tail = resid
                 if not last_chunk_and_tail_are_consistent(chunks[-1], tail):
                     continue
-                res += [calc_num_idx_in_str(int(chunks[0])) - len(head)]
+                res += [calc_num_idx_in_str_2(int(chunks[0])) - len(head)]
             else:
                 chunks = []
-                tail = resid
+                tail = full_resid
                 if tail != '':
                     tail_num = gen_tail_num_by_head(head, tail, chunk_size, len(subseq))
                     if tail_num == '':
                         continue
-                    res += [calc_num_idx_in_str(int(tail_num)) - len(head)]
+                    res += [calc_num_idx_in_str_2(int(tail_num)) - len(head)]
                 else:
-                    res += [calc_num_idx_in_str(int(head))]
+                    res += [calc_num_idx_in_str_2(int(head))]
         if res != []:
             return min(res)
 
 
-subseq = '88999'
-import time
-start = time.clock()
-find_subseq(subseq, gen_num_seq())
-dt1 = time.clock() - start
-t1 = time.clock()
-find_solution(subseq)
-dt2 = time.clock() - t1
-print dt1, dt2
-print 'naive res:', find_subseq(subseq, gen_num_seq())
-print 'mumbo jumbo res:', find_solution(subseq)
+def profile__find_solution():
+    subseq = '8899999'
+    import time
+    
+    t1 = time.clock()
+    naive_res = find_subseq(subseq, gen_num_seq())
+    dt1 = time.clock() - t1
+    
+    t2 = time.clock()
+    mumbo_jumbo_res = find_solution(subseq)
+    dt2 = time.clock() - t2
 
-for i in range(1, 1000):
-    subseq = str(i)
-    if find_subseq(subseq, gen_num_seq()) != find_solution(subseq):
-        print subseq
-        print 'naive res:', find_subseq(subseq, gen_num_seq())
-        print 'mumbo jumbo res:', find_solution(subseq)
-        break  
+    print
+    print 'profile__find_solution() results:'
+    print 'naive time', dt1
+    print 'naive res:', naive_res
+    print 'mumbo jumbo time:', dt2
+    print 'mumbo jumbo res:', mumbo_jumbo_res
+    print
 
+    
+#profile__find_solution()
+
+
+def test1__find_solution():
+    for i in range(1, 1000):
+        subseq = str(i)
+        if find_subseq(subseq, gen_num_seq()) != find_solution(subseq):
+            print subseq
+            print 'naive res:', find_subseq(subseq, gen_num_seq())
+            print 'mumbo jumbo res:', find_solution(subseq)
+            print 'test1__find_solution() failed'
+            print
+            break
+    print 'test1__find_solution() passed'
+
+
+test1__find_solution()
+
+
+def test2__find_solution():
+    n = 1000
+    s = gen_seq_str(n)
+    for width in range(2, n):
+        for pos in range(0, n-width):
+            subseq = s[pos:(pos+width)]
+            if find_solution(subseq) != find_subseq(subseq, gen_num_seq()):
+                print 'test2__find_solution() failed at pos, width = ', pos, width
+                print s[pos:(pos+width)]
+                return
+    print 'test2__find_solution() passed'
+
+
+test2__find_solution()
