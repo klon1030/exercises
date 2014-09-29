@@ -254,7 +254,7 @@ def sprint_sol_step(v1, v2, step):
             ACTS.fB: 'fill #%(B_id)d',
             }
     action_str = action_tmplts[action] % {'A_id': A_id, 'B_id': B_id}
-    return '%s: %d %d' % (action_str, state[v1], state[v2])
+    return '%17s: %d \t%d' % (action_str, state[v1], state[v2])
 
 
 def test__sprint_sol_step():
@@ -266,7 +266,7 @@ def test__sprint_sol_step():
             'v2': 3,
             'step': ({5:2, 3:0}, ACTS.eB),
             },
-        'expected': 'empty #2: 2 0'
+        'expected': 'empty #2: 2 \t0'
         },
         {
         'input': {
@@ -274,14 +274,14 @@ def test__sprint_sol_step():
             'v2': 5,
             'step': ({5:2, 3:0}, ACTS.eB),
             },
-        'expected': 'empty #1: 0 2'
+        'expected': 'empty #1: 0 \t2'
         },
     )
     test_OK = True
     for d in test_cases:
         d_in = d['input']
         res = sprint_sol_step(d_in['v1'], d_in['v2'], d_in['step'])
-        if res != d['expected']:
+        if res.strip() != d['expected']:
             test_OK = False
             print '''\
 test__sprint_sol_step() failed
@@ -298,3 +298,35 @@ got:
 
                 
 test__sprint_sol_step()
+
+
+
+def gcd(a, b):
+    """ Вычисление НОД(a, b) по алгоритму Евклида с использованием рекурсии."""
+    if b == 0:
+        return abs(a);
+    return gcd(b, a % b);
+
+
+
+def solve(v1, v2, q):
+    d = gcd(v1, v2)
+    if d != 1 and q % d != 0 :
+            return None
+    res1 = get_first_solution(v1, v2, q)
+    res2 = get_second_solution(v1, v2, q)
+    if len(res1) > len(res2):
+        return res2
+    return res1
+
+
+def print_solution(v1, v2, q):
+    sol = solve(v1, v2, q)
+    if sol == None:
+        print 'невозможно решить задачу'
+        return
+    print "\t%17s: %d \t%d" % ('volumes:', v1, v2)
+    print "-"*40
+    print "\t%17s: 0 \t0" % ('init_state')
+    for (i, step) in enumerate(sol):
+        print '%d\t' % (i+1), sprint_sol_step(v1, v2, step)
