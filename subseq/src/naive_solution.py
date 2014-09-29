@@ -43,11 +43,15 @@ def find_solution_naively(subseq):
 
 
 def main():
-    fin = open('in.txt')
-    fout = open('out.txt', 'w')
-    for line in fin:
-        subseq = line.strip()
-        fout.write('%d\n' % find_solution_naively(subseq))
+    try:
+        with open("in.txt") as fin:
+            fout = open('out.txt', 'w')
+            for line in fin:
+                subseq = line.strip()
+                fout.write('%d\n' % find_solution_naively(subseq))        
+    except IOError:
+        print("Ошибка при открытии файла 'in.txt'. Возможно, его не существует?")
+        sys.exit(1)
 
 
 if __name__ == '__main__':
