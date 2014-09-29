@@ -310,6 +310,8 @@ def gcd(a, b):
 
 
 def solve(v1, v2, q):
+    if v1 <= 0 or v2 <= 0 or q > max(v1, v2):
+        return None
     d = gcd(v1, v2)
     if d != 1 and q % d != 0 :
             return None
@@ -330,3 +332,36 @@ def print_solution(v1, v2, q):
     print "\t%17s: 0 \t0" % ('init_state')
     for (i, step) in enumerate(sol):
         print '%d\t' % (i+1), sprint_sol_step(v1, v2, step)
+
+
+def fprint_solution(v1, v2, q):
+    f = open('out.txt', 'w')
+    sol = solve(v1, v2, q)
+    if sol == None:
+        f.write('невозможно решить задачу')
+        return
+    f.write("\t%17s: %d \t%d" % ('volumes:', v1, v2) + '\n')
+    f.write("-"*40 + '\n')
+    f.write("\t%17s: 0 \t0" % ('init_state') + '\n')
+    for (i, step) in enumerate(sol):
+        f.write('%d\t' % (i+1) + sprint_sol_step(v1, v2, step) + '\n')
+
+
+def read_in():
+    try:
+        with open("in.txt") as f:
+            f_str = f.read()
+            pars = filter(lambda s: s.strip() != '', f_str.strip().split())        
+    except IOError:
+        print("Cannot open file 'in.txt'")
+    (v1, v2, q) = map(int, pars[:3])
+    return (v1, v2, q)
+
+
+def main():
+    (v1, v2, q) = read_in()
+    fprint_solution(v1, v2, q)
+
+
+if  __name__ ==  "__main__" :
+    main()
