@@ -226,7 +226,7 @@ def gen_next_chunk_by_head(resid, head, chunk_size):
            is_ten_pow(chunk_c):
             return (chunk_c, resid[(chunk_size+1):])
     # В противном случае: кусок с таким количеством разрядов не совместим с текущей головой.
-    return None
+    return (None, None)
 
 
 def test__gen_next_chunk_by_head():
@@ -239,7 +239,7 @@ def test__gen_next_chunk_by_head():
             'resid': '3456',
             'chunk_size': 4,
             },
-        'expected': None
+        'expected': (None, None)
         },
         {
         'input':{
@@ -271,7 +271,7 @@ def test__gen_next_chunk_by_head():
             'resid': '10',
             'chunk_size': 2,
             },
-        'expected': None
+        'expected': (None, None)
         },
     )
     test_OK = True
@@ -355,7 +355,7 @@ def test__gen_next_chunk():
         print '%s passed' % test_name
 
 
-test__gen_next_chunk()
+#test__gen_next_chunk()
         
 
 def gen_chunks(resid, first_chunk):
@@ -439,7 +439,7 @@ def test__gen_chunks():
         print '%s passed' % test_name
 
 
-test__gen_chunks()
+#test__gen_chunks()
 
 
 
@@ -458,18 +458,15 @@ def find_solution(subseq):
     for chunk_size in range(1, len(subseq)+1):
         res = []
         for (head, full_resid) in gen_head(subseq, chunk_size):
-            #print chunk_size, '"%s" "%s"' % (head, resid)
             if len(full_resid) >= chunk_size:
-                next_chunk_res = gen_next_chunk_by_head(full_resid, head, chunk_size)
-                if next_chunk_res == None:
+                (first_chunk, resid) = gen_next_chunk_by_head(full_resid, head, chunk_size)
+                if first_chunk == None:
                     continue
-                (first_chunk, resid) = next_chunk_res
                 chunks = gen_chunks(resid, first_chunk)
                 if chunks == None:
                     continue
                 res += [calc_num_idx_in_str_2(int(chunks[0])) - len(head)]
             else:
-                chunks = []
                 tail = full_resid
                 if tail != '':
                     tail_num = gen_tail_num_by_head(head, tail, chunk_size, len(subseq))
@@ -504,7 +501,7 @@ def profile__find_solution():
     print
 
     
-profile__find_solution()
+#profile__find_solution()
 
 # Первый тест основной фуункции поиска решения:
 def test1__find_solution():
@@ -520,7 +517,7 @@ def test1__find_solution():
     print 'test1__find_solution() passed'
 
 
-test1__find_solution()
+#test1__find_solution()
 
 
 def gen_seq_str(n):
@@ -547,7 +544,7 @@ def test2__find_solution(n = 100, crash_lock = True):
     print 'test2__find_solution() passed'
 
 
-test2__find_solution(crash_lock = False)
+#test2__find_solution(crash_lock = False)
 
 
 def main():
@@ -563,5 +560,4 @@ def main():
         
 
 if __name__ == '__main__':
-    pass
-##    main()
+    main()
