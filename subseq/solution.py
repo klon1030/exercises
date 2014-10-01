@@ -296,9 +296,9 @@ def gen_next_chunk(resid, cur_chunk):
     expected_next_chunk = next_num_str(cur_chunk)
     exp_next_chunk_len = len(expected_next_chunk)
     next_chunk_sz = min(exp_next_chunk_len, len(resid))
-    if expected_next_chunk == resid[:next_chunk_sz]:
-        return (expected_next_chunk, resid[next_chunk_sz:])
-    return None
+    if expected_next_chunk[:next_chunk_sz] == resid[:next_chunk_sz]:
+        return (resid[:next_chunk_sz], resid[next_chunk_sz:])
+    return (None, None)
 
 
 def test__gen_next_chunk():
@@ -317,7 +317,7 @@ def test__gen_next_chunk():
             'cur_chunk': '12',
             'resid': '3413',
             },
-        'expected': None
+        'expected': (None, None)
         },
         {
         'input':{
@@ -338,7 +338,7 @@ def test__gen_next_chunk():
             'cur_chunk': '99', 
             'resid': '10',
             },
-        'expected': None
+        'expected': ('10', '')
         },
     )
     test_OK = True
@@ -362,16 +362,13 @@ def gen_chunks(resid, first_chunk):
     chunk_size = len(first_chunk)
     chunks = [first_chunk]
     cur_chunk = first_chunk
-    while len(resid) >= chunk_size:
-        next_chunk_res = gen_next_chunk(resid, cur_chunk)
-        if next_chunk_res == None:
-            if len(resid) == chunk_size:
-                return (chunks, resid)
+    while resid != '':
+        (next_chunk, resid) = gen_next_chunk(resid, cur_chunk)
+        if next_chunk == None:
             return None
-        (next_chunk, resid) = next_chunk_res
         chunks += [next_chunk]
         cur_chunk = next_chunk
-    return (chunks, resid)
+    return chunks
 
 
 def test__gen_chunks():
@@ -383,49 +380,49 @@ def test__gen_chunks():
             'first_chunk': '1',
             'resid': '234',
             },
-        'expected': (['1', '2', '3', '4'], '')
+        'expected': ['1', '2', '3', '4']
         },
         {
         'input':{
             'first_chunk': '1',
             'resid': '235',
             },
-        'expected': (['1', '2', '3'], '5')
+        'expected': None
         },
         {
         'input':{
             'first_chunk': '12',
             'resid': '131',
             },
-        'expected': (['12', '13'], '1')
+        'expected': ['12', '13', '1']
         },
         {
         'input':{
             'first_chunk': '99', 
             'resid': '1001',
             },
-        'expected': (['99', '100'], '1')
+        'expected': ['99', '100', '1']
         },
         {
         'input':{
             'first_chunk': '99', 
             'resid': '100',
             },
-        'expected': (['99', '100'], '')
+        'expected': ['99', '100']
         },
         {
         'input':{
             'first_chunk': '99', 
             'resid': '7',
             },
-        'expected': (['99'], '7')
+        'expected': None
         },
         {
         'input':{
             'first_chunk': '99', 
             'resid': '10',
             },
-        'expected': (['99'], '10')
+        'expected': ['99', '10']
         },
     )
     test_OK = True
@@ -444,15 +441,6 @@ def test__gen_chunks():
 
 test__gen_chunks()
 
-
-
-def last_chunk_and_tail_are_consistent(last_chunk, tail):
-    if tail == '':
-        return True
-    if last_chunk.strip('9') == '': # если последний кусок есть число 99..99
-        return tail.strip('0') == '1' # tail должен выглядеть как 100.000
-    inc_chunk = next_num_str(last_chunk)    
-    return inc_chunk[:len(tail)] == tail
 
 
 def gen_tail_num_by_head(head,
@@ -476,12 +464,8 @@ def find_solution(subseq):
                 if next_chunk_res == None:
                     continue
                 (first_chunk, resid) = next_chunk_res
-                chunks_res = gen_chunks(resid, first_chunk)
-                if chunks_res == None:
-                    continue
-                (chunks, resid) = chunks_res
-                tail = resid
-                if not last_chunk_and_tail_are_consistent(chunks[-1], tail):
+                chunks = gen_chunks(resid, first_chunk)
+                if chunks == None:
                     continue
                 res += [calc_num_idx_in_str_2(int(chunks[0])) - len(head)]
             else:
@@ -579,4 +563,5 @@ def main():
         
 
 if __name__ == '__main__':
-    main()
+    pass
+##    main()
