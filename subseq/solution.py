@@ -293,27 +293,11 @@ def test__gen_next_chunk_by_head():
 
 def gen_next_chunk(resid, cur_chunk):
     chunk_size = len(cur_chunk)
-    if len(resid) >= chunk_size:
-        # Могут ли голова и следующий за ней "кусок" являться последовательными числами
-        # с одинаковым количеством разрядов?
-        cur_chunk_inc = next_num_str(cur_chunk)
-        next_chunk_c = resid[:chunk_size]
-        # следующий "кусок" является десятичной записью числа (не начинается с нулей)
-        # следующее число с таким же количеством разрядов не может быть степенью 10
-        # число из следующего куска должно быть на 1 больше числа из текущего куска
-        if is_dec_number(next_chunk_c) and\
-           not is_ten_pow(next_chunk_c) and\
-           next_chunk_c == cur_chunk_inc:
-            return (next_chunk_c, resid[chunk_size:])
-
-    if len(resid) > chunk_size:
-    # Возможно, тогда голова имеет вид "99...9" и следующий кусок
-    # является числом вида "100...0"?
-        next_chunk_c = resid[:(chunk_size+1)]
-        if cur_chunk.strip('9') == '' and\
-           is_ten_pow(next_chunk_c):
-            return (next_chunk_c, resid[(chunk_size+1):])
-    # В противном случае: кусок с таким количеством разрядов не совместим с текущим куском.
+    expected_next_chunk = next_num_str(cur_chunk)
+    exp_next_chunk_len = len(expected_next_chunk)
+    next_chunk_sz = min(exp_next_chunk_len, len(resid))
+    if expected_next_chunk == resid[:next_chunk_sz]:
+        return (expected_next_chunk, resid[next_chunk_sz:])
     return None
 
 
@@ -371,7 +355,7 @@ def test__gen_next_chunk():
         print '%s passed' % test_name
 
 
-#test__gen_next_chunk()
+test__gen_next_chunk()
         
 
 def gen_chunks(resid, first_chunk):
@@ -458,7 +442,7 @@ def test__gen_chunks():
         print '%s passed' % test_name
 
 
-#test__gen_chunks()
+test__gen_chunks()
 
 
 
@@ -536,7 +520,7 @@ def profile__find_solution():
     print
 
     
-#profile__find_solution()
+profile__find_solution()
 
 # Первый тест основной фуункции поиска решения:
 def test1__find_solution():
@@ -552,7 +536,7 @@ def test1__find_solution():
     print 'test1__find_solution() passed'
 
 
-#test1__find_solution()
+test1__find_solution()
 
 
 def gen_seq_str(n):
@@ -579,7 +563,7 @@ def test2__find_solution(n = 100, crash_lock = True):
     print 'test2__find_solution() passed'
 
 
-#test2__find_solution(crash_lock = False)
+test2__find_solution(crash_lock = False)
 
 
 def main():
