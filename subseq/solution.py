@@ -52,7 +52,7 @@ def intersect_head_and_tail_chunks(head_chunk,
     N = subseq_len
     
     head_num = int(head_str)
-    inc_head = str(head_num+1)[-k:]
+    inc_head = ('%%0%dd' % k %(head_num+1))[-k:]
     inc_head_chunk = '*'*(len(head_chunk) - k) + inc_head
 
     if N == len(head_chunk):
@@ -120,6 +120,20 @@ def test__intersect_head_and_tail_chunks():
             'subseq_len': 6
             },
         'expected': '5870'
+        },
+        {'input':{
+            'chunked_head': '*01',
+            'chunked_tail': '2**',
+            'subseq_len': 3
+            },
+        'expected': '202'
+        },
+        {'input':{
+            'chunked_head': '**0',
+            'chunked_tail': '12*',
+            'subseq_len': 3
+            },
+        'expected': '121'
         },
         )
     test_OK = True
@@ -206,26 +220,14 @@ def is_ten_pow(s):
 
 
 def gen_next_chunk_by_head(resid, head, chunk_size):
-    if len(resid) >= chunk_size:
-        # Могут ли голова и следующий за ней "кусок" являться последовательными числами
-        # с одинаковым количеством разрядов?
-        h_len = len(head)
-        head_inc = next_num_str(head)[-h_len:]
-        chunk_c = resid[:chunk_size]
-        # следующий "кусок" является десятичной записью числа (не начинается с нулей)
-        # следующее число с таким же количеством разрядов не может быть степенью 10
-        # "хвост" следующего числа должен быть на 1 больше головы
-        if is_dec_number(chunk_c) and not is_ten_pow(chunk_c) and chunk_c[-h_len:] == head_inc:
-            return (chunk_c, resid[chunk_size:])
-
-    if len(resid) > chunk_size:
-    # Возможно, тогда голова имеет вид "99...9" и следующий кусок
-    # является числом вида "100...0"?
-        chunk_c = resid[:(chunk_size+1)]
-        if head.strip('9') == '' and\
-           is_ten_pow(chunk_c):
-            return (chunk_c, resid[(chunk_size+1):])
-    # В противном случае: кусок с таким количеством разрядов не совместим с текущей головой.
+    for exp_next_chunk_len in [chunk_size, chunk_size+1]:
+        next_chunk_sz = min(exp_next_chunk_len, len(resid))
+        chunk_c = resid[:next_chunk_sz]
+        if not is_dec_number(chunk_c):
+            return (None, None)
+        expected_head_for_chunk_c = str(int(chunk_c)-1)[-len(head):]
+        if expected_head_for_chunk_c == head:
+            return (resid[:next_chunk_sz], resid[next_chunk_sz:])
     return (None, None)
 
 
@@ -273,6 +275,22 @@ def test__gen_next_chunk_by_head():
             },
         'expected': (None, None)
         },
+        {
+        'input':{
+            'head': '1', 
+            'resid': '0',
+            'chunk_size': 1,
+            },
+        'expected': (None, None)
+        },
+        {
+        'input':{
+            'head': '1', 
+            'resid': '92',
+            'chunk_size': 1,
+            },
+        'expected': (None, None)
+        },
     )
     test_OK = True
     for tc in test_cases:
@@ -289,6 +307,108 @@ def test__gen_next_chunk_by_head():
 
 
 #test__gen_next_chunk_by_head()
+
+
+def gen_first_chunk(subseq, chunk_size):
+    len_wo_lead_zeros = len(subseq.lstrip('0'))
+    zeros_num = len(subseq) - len_wo_lead_zeros
+    if chunk_size <= zeros_num:
+        return [(None, None, None)]
+    start_idx = zeros_num
+    starts = range(start_idx, chunk_size)
+    ends = map(lambda start: start + min(len(subseq) - start, chunk_size), starts)
+    heads = map(lambda start: subseq[:start], starts)
+    first_chunks = map(lambda start, end: subseq[start:end], starts, ends)
+    resids = map(lambda start, end: None if  end - start < chunk_size else subseq[end:], starts, ends)
+    res = filter(lambda (head, fch, resid): is_dec_number(fch), zip(heads, first_chunks, resids))
+    return res
+
+
+def test__gen_first_chunk():
+    test_name = 'test__gen_first_chunk'
+    tested_func = gen_first_chunk
+    test_cases = (
+        {
+        'input':{
+            'subseq': '12345678',
+            'chunk_size': 3,
+            },
+        'expected': [('', '123', '45678'),
+                     ('1', '234', '5678'),
+                     ('12', '345', '678')]
+        },
+        {
+        'input':{
+            'subseq': '00123456',
+            'chunk_size': 3,
+            },
+        'expected': [('00', '123', '456')]
+        },
+        {
+        'input':{
+            'subseq': '0123456',
+            'chunk_size': 3,
+            },
+        'expected': [('0', '123', '456'),
+                     ('01', '234', '56')]
+        },
+        {
+        'input':{
+            'subseq': '1234',
+            'chunk_size': 3,
+            },
+        'expected': [('', '123', '4'),
+                     ('1', '234', ''),
+                     ('12', '34', None)]
+        },
+        {
+        'input':{
+            'subseq': '1234',
+            'chunk_size': 4,
+            },
+        'expected': [('', '1234', ''),
+                     ('1', '234', None),
+                     ('12', '34', None),
+                     ('123', '4', None)]
+        },
+        {
+        'input':{
+            'subseq': '01',
+            'chunk_size': 1,
+            },
+        'expected': [(None, None, None)]
+        },
+        {
+        'input':{
+            'subseq': '022',
+            'chunk_size': 3,
+            },
+        'expected': [('0', '22', None),
+                     ('02', '2', None)]
+        },
+        {
+        'input':{
+            'subseq': '100',
+            'chunk_size': 2,
+            },
+        'expected': [('', '10', '0')]
+        },
+    )
+    test_OK = True
+    for tc in test_cases:
+        i = tc['input']
+        res = tested_func(i['subseq'], i['chunk_size'])
+        if res != tc['expected']:
+            test_OK = False
+            print '%s failed' % test_name
+            print 'test_case:', tc
+            print 'got:', res
+            print
+    if test_OK:
+        print '%s passed' % test_name
+
+
+#test__gen_first_chunk()
 
 
 def gen_next_chunk(resid, cur_chunk):
@@ -447,6 +567,10 @@ def gen_tail_num_by_head(head,
                          tail,
                          chunk_size,
                          subseq_len):
+    if head == '':
+        return tail
+##    if head.strip('0') == '':
+##        return ''
     head_chunk = '*'*(chunk_size - len(head)) + head
     if not is_dec_number(tail):
         return ''
@@ -457,27 +581,41 @@ def gen_tail_num_by_head(head,
 def find_solution(subseq):
     for chunk_size in range(1, len(subseq)+1):
         res = []
-        for (head, full_resid) in gen_head(subseq, chunk_size):
-            if len(full_resid) >= chunk_size:
-                (first_chunk, resid) = gen_next_chunk_by_head(full_resid, head, chunk_size)
-                if first_chunk == None:
-                    continue
-                chunks = gen_chunks(resid, first_chunk)
-                if chunks == None:
-                    continue
-                res += [calc_num_idx_in_str_2(int(chunks[0])) - len(head)]
-            else:
-                tail = full_resid
-                if tail != '':
-                    tail_num = gen_tail_num_by_head(head, tail, chunk_size, len(subseq))
+        for (head, first_chunk, resid) in gen_first_chunk(subseq, chunk_size):
+            # не существует ниодного разбиения с "первым блоком" длины chunk_size:
+            if head == None:
+##                print 1, (head, first_chunk, resid)
+                continue
+            # Если разбиение даёт неполный первый блок (то есть "хвост")
+            if resid == None:
+                # если есть голова, то проверить на совместимость с хвостом и если совместимы получить номер
+                if head != '':
+##                    print 2, (head, first_chunk, resid)
+                    tail_num = gen_tail_num_by_head(head, first_chunk, chunk_size, len(subseq))
                     if tail_num == '':
                         continue
-                    res += [calc_num_idx_in_str_2(int(tail_num)) - len(head)]
                 else:
-                    res += [calc_num_idx_in_str_2(int(head))]
+##                    print 3, (head, first_chunk, resid)
+                    tail_num = tail
+                res += [calc_num_idx_in_str_2(int(tail_num)) - len(head)]
+                continue                
+            else:
+##                print 4, (head, first_chunk, resid)
+                # если голова и певый блок совместимы:
+                if head == '' or str(int(first_chunk)-1)[-len(head):] == head:
+                    if gen_chunks(resid, first_chunk) != None:
+                        res += [calc_num_idx_in_str_2(int(first_chunk)) - len(head)]
+                        continue
         if res != []:
             return min(res)
-
+        
+    len_wo_lead_zeros = len(subseq.lstrip('0'))
+    zeros_num = len(subseq) - len_wo_lead_zeros
+    if zeros_num > 0:
+        if zeros_num == len(subseq):
+            return calc_num_idx_in_str_2(int( '1'+subseq)) + 1
+        else:
+            return calc_num_idx_in_str_2(int(subseq[zeros_num:] + subseq[:zeros_num])) + len(subseq[zeros_num:])
 
 # Функция для профилирования:
 def profile__find_solution():
@@ -539,12 +677,14 @@ def test2__find_solution(n = 100, crash_lock = True):
             if crash_lock or len(subseq) == len(subseq.lstrip('0')):
                 if find_solution(subseq) != find_subseq(subseq, gen_num_seq()):
                     print 'test2__find_solution() failed at pos, width = ', pos, width
-                    print s[pos:(pos+width)]
+                    print 'got:', find_solution(subseq)
+                    print 'expected:', find_subseq(subseq, gen_num_seq())
+                    print s[pos:(pos+width)], subseq#, s
                     return
     print 'test2__find_solution() passed'
 
 
-#test2__find_solution(crash_lock = False)
+#test2__find_solution(n = 100)
 
 
 def main():
@@ -560,4 +700,5 @@ def main():
         
 
 if __name__ == '__main__':
+    pass
     main()
